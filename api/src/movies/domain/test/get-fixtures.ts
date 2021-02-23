@@ -24,13 +24,13 @@ export function getFixtures() {
 
     const movieCollectionFactory = testingModule.get(MovieCollectionFactory);
     fixtures.aBasicUserMovieCollection = () =>
-      movieCollectionFactory.createMovieCollectionFor(
+      movieCollectionFactory.createMovieCollection(
         'basic',
         'America/New_York',
         new UserId('basic user'),
       );
     fixtures.aPremiumUserMovieCollection = () =>
-      movieCollectionFactory.createMovieCollectionFor(
+      movieCollectionFactory.createMovieCollection(
         'premium',
         'America/New_York',
         new UserId('premium'),

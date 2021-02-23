@@ -1,6 +1,6 @@
 import { BasicUserPolicy } from './basic-user.policy';
 import { PremiumUserPolicy } from './premium-user.policy';
-import { MovieCollection } from './movie-collection';
+import { MovieCollection, MovieCollectionSnapshot } from './movie-collection';
 import { UserId } from './user.id';
 import { Injectable } from '@nestjs/common';
 
@@ -16,11 +16,15 @@ export class MovieCollectionFactory {
     private readonly premiumUserPolicy: PremiumUserPolicy,
   ) {}
 
-  createMovieCollectionFor(
+  createMovieCollection(
     userType: 'basic' | 'premium',
     timezone: string,
     userId: UserId,
+    snapshot?: MovieCollectionSnapshot,
   ): MovieCollection {
+    if (snapshot) {
+      return MovieCollection.fromSnapshot(snapshot, this.#policies[userType]);
+    }
     return new MovieCollection(this.#policies[userType], userId, timezone);
   }
 }

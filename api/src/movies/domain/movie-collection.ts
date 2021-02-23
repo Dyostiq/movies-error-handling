@@ -9,8 +9,14 @@ import { MovieId } from './movie.id';
 import { BasicUserPolicyError } from './basic-user.policy';
 
 type AllCreateMoviePolicyError = BasicUserPolicyError | CreateMoviePolicyError;
-type CreateAMovieError = 'duplicate' | AllCreateMoviePolicyError;
-type RollbackMovieError = 'the movie does not exist';
+export type CreateAMovieError = 'duplicate' | AllCreateMoviePolicyError;
+export type RollbackMovieError = 'the movie does not exist';
+export type MovieCollectionSnapshot = Readonly<{
+  movies: Movie[];
+  timezone: string;
+  userId: UserId;
+}>;
+
 export class MovieCollection {
   private movies: Movie[] = [];
 
@@ -43,6 +49,27 @@ export class MovieCollection {
     } else {
       return left('the movie does not exist');
     }
+  }
+
+  toSnapshot(): MovieCollectionSnapshot {
+    return {
+      userId: this.userId,
+      timezone: this.timezone,
+      movies: [...this.movies],
+    };
+  }
+
+  static fromSnapshot(
+    snapshot: MovieCollectionSnapshot,
+    policy: CreateMoviePolicy<AllCreateMoviePolicyError>,
+  ) {
+    const instance = new MovieCollection(
+      policy,
+      snapshot.userId,
+      snapshot.timezone,
+    );
+    instance.movies = [...snapshot.movies];
+    return instance;
   }
 
   private isADuplicate(title: string): boolean {

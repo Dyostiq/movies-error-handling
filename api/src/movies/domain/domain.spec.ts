@@ -15,6 +15,33 @@ test(`a user can create a movie`, async () => {
   assertRight(result);
 });
 
+test(`a movie in collection should be rollbackable`, async () => {
+  // given
+  const movies = fixtures.aBasicUserMovieCollection();
+  // and
+  movies.createMovie('Batman');
+  movies.createMovie('Batman Returns');
+  // when
+  const result = movies.rollbackMovie('Batman Returns');
+  // then
+  assertRight(result);
+  // and
+  expect(movies.listMovies()).toStrictEqual(['Batman']);
+});
+
+test(`only a movie that exists can be rollbacked`, async () => {
+  // given
+  const movies = fixtures.aBasicUserMovieCollection();
+  // and
+  movies.createMovie('Batman');
+  // when
+  const result = movies.rollbackMovie('Batman Returns');
+  // then
+  assertLeft(result);
+  // and
+  expect(movies.listMovies()).toStrictEqual(['Batman']);
+});
+
 test(`movies should not duplicate`, async () => {
   // given
   const movies = fixtures.aBasicUserMovieCollection();
@@ -47,6 +74,31 @@ withTime('2020-02-05T00:00:00-05:00', () => {
       'Batman Forever',
       'Batman & Robin',
       'Batman Begins',
+    ]);
+  });
+
+  test(`a basic user can create sixth movie when one was rollbacked`, async () => {
+    // given
+    const movies = fixtures.aBasicUserMovieCollection();
+    // and
+    movies.createMovie('Batman');
+    movies.createMovie('Batman Returns');
+    movies.createMovie('Batman Forever');
+    movies.createMovie('Batman & Robin');
+    movies.createMovie('Batman Begins');
+    // and
+    movies.rollbackMovie('Batman Returns');
+    // when
+    const result = movies.createMovie('The Dark Knight');
+    // then
+    assertRight(result);
+    // and
+    expect(movies.listMovies()).toStrictEqual([
+      'Batman',
+      'Batman Forever',
+      'Batman & Robin',
+      'Batman Begins',
+      'The Dark Knight',
     ]);
   });
 

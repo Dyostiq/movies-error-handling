@@ -10,6 +10,7 @@ import { BasicUserPolicyError } from './basic-user.policy';
 
 type AllCreateMoviePolicyError = BasicUserPolicyError | CreateMoviePolicyError;
 type CreateAMovieError = 'duplicate' | AllCreateMoviePolicyError;
+type RollbackMovieError = 'the movie does not exist';
 export class MovieCollection {
   private movies: Movie[] = [];
 
@@ -35,6 +36,15 @@ export class MovieCollection {
     return this.movies.map((movie) => movie.title);
   }
 
+  rollbackMovie(title: string): Either<RollbackMovieError, true> {
+    if (this.isTitleInCollection(title)) {
+      this.removeMovie(title);
+      return right(true);
+    } else {
+      return left('the movie does not exist');
+    }
+  }
+
   private isADuplicate(title: string): boolean {
     return this.movies.find((movie) => movie.title === title) !== undefined;
   }
@@ -43,5 +53,13 @@ export class MovieCollection {
     const movie = new Movie(MovieId.newOne(), title);
     this.movies.push(movie);
     return movie;
+  }
+
+  private isTitleInCollection(title: string): boolean {
+    return this.movies.find((movie) => movie.title === title) !== undefined;
+  }
+
+  private removeMovie(title: string): void {
+    this.movies = this.movies.filter((movie) => movie.title !== title);
   }
 }

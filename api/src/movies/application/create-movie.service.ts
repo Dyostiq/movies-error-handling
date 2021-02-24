@@ -1,4 +1,4 @@
-import { CollectionRepository } from './collection.repository';
+import { MovieCollectionRepository } from './movie-collection.repository';
 import {
   CreateAMovieError,
   MovieCollectionFactory,
@@ -17,7 +17,7 @@ export type CreateMovieApplicationError =
 @Injectable()
 export class CreateMovieService {
   constructor(
-    private readonly collections: CollectionRepository,
+    private readonly collections: MovieCollectionRepository,
     private readonly collectionFactory: MovieCollectionFactory,
     private readonly detailsRepository: DetailsRepository,
     private readonly detailsService: DetailsService,

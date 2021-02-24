@@ -7,7 +7,7 @@ import { left } from 'fp-ts/Either';
 import { Test } from '@nestjs/testing';
 import { MoviesApplicationModule } from '../movies-application.module';
 import { MoviesTestAdaptersModule } from './movies-test-adapters.module';
-import { CollectionRepository } from '../collection.repository';
+import { MovieCollectionRepository } from '../movie-collection.repository';
 import { DetailsRepository } from '../details.repository';
 import { DetailsService } from '../details.service';
 
@@ -46,7 +46,7 @@ export function getFixtures() {
       imports: [MoviesApplicationModule.for([MoviesTestAdaptersModule])],
     }).compile();
 
-    collectionRepository = testingModule.get(CollectionRepository);
+    collectionRepository = testingModule.get(MovieCollectionRepository);
     detailsRepository = testingModule.get(DetailsRepository);
     inMemoryDetailsService = testingModule.get(DetailsService);
     createService = testingModule.get(CreateMovieService);

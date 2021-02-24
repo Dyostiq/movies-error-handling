@@ -1,4 +1,4 @@
-import { CollectionRepository } from '../collection.repository';
+import { MovieCollectionRepository } from '..';
 import { Optional } from 'utility-types';
 import {
   MovieCollection,
@@ -10,7 +10,7 @@ import { Either, right } from 'fp-ts/Either';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class InMemoryCollectionRepository extends CollectionRepository {
+export class InMemoryCollectionRepository extends MovieCollectionRepository {
   db: Optional<{
     [id: string]: MovieCollectionSnapshot;
   }> = {};
@@ -47,7 +47,7 @@ export class InMemoryCollectionRepository extends CollectionRepository {
   }
 
   async withTransaction<T>(
-    transactionCode: (transaction: CollectionRepository) => T,
+    transactionCode: (transaction: MovieCollectionRepository) => T,
   ): Promise<T> {
     return transactionCode(this);
   }

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MoviesDomainModule } from '../../domain';
-import { CollectionRepository } from '../collection.repository';
+import { MovieCollectionRepository } from '../movie-collection.repository';
 import { InMemoryCollectionRepository } from './in-memory-collection.repository';
 import { DetailsRepository } from '../details.repository';
 import { InMemoryDetailsRepository } from './in-memory-details.repository';
@@ -11,7 +11,7 @@ import { InMemoryDetailsService } from './in-memory-details.service';
   imports: [MoviesDomainModule],
   providers: [
     {
-      provide: CollectionRepository,
+      provide: MovieCollectionRepository,
       useClass: InMemoryCollectionRepository,
     },
     {
@@ -23,6 +23,6 @@ import { InMemoryDetailsService } from './in-memory-details.service';
       useClass: InMemoryDetailsService,
     },
   ],
-  exports: [CollectionRepository, DetailsRepository, DetailsService],
+  exports: [MovieCollectionRepository, DetailsRepository, DetailsService],
 })
 export class MoviesTestAdaptersModule {}

@@ -1,7 +1,7 @@
 import { Either } from 'fp-ts/Either';
 import { MovieCollection } from '../domain';
 
-export abstract class CollectionRepository {
+export abstract class MovieCollectionRepository {
   abstract findUserMovieCollection(
     userType: 'basic' | 'premium',
     timezone: string,
@@ -9,7 +9,7 @@ export abstract class CollectionRepository {
   ): Promise<Either<Error, MovieCollection | null>>;
 
   abstract withTransaction<T>(
-    transactionCode: (transaction: CollectionRepository) => T,
+    transactionCode: (transaction: MovieCollectionRepository) => T,
   ): Promise<T>;
 
   abstract saveCollection(

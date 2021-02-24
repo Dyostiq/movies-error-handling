@@ -4,6 +4,8 @@ import { Connection } from 'typeorm';
 import { getConnectionToken } from '@nestjs/typeorm';
 import { TypeormMovieCollectionRepository } from '../../../src/movies/infrastructure/typeorm-movie-collection.repository';
 import { MovieCollectionFactory } from '../../../src/movies/domain';
+import { clearRepo } from '../clear-repo';
+import { MovieCollectionRepository } from '../../../src/movies/application';
 
 export function getFixtures() {
   const fixtures: {
@@ -24,17 +26,15 @@ export function getFixtures() {
       imports: [AppModule],
     }).compile();
 
-    const connection = moduleFixture.get<Connection>(getConnectionToken());
-    await connection.query(
-      `
-          TRUNCATE ${connection.entityMetadatas
-            .map((metadata) => `"${metadata.tableName}"`)
-            .join(',')} CASCADE
-        `,
-    );
+    await clearRepo(moduleFixture);
 
-    fixtures.getTypeormMovieCollectionRepository = () =>
-      moduleFixture.get(TypeormMovieCollectionRepository);
+    fixtures.getTypeormMovieCollectionRepository = () => {
+      const repo = moduleFixture.get(MovieCollectionRepository);
+      if (!(repo instanceof TypeormMovieCollectionRepository)) {
+        fail();
+      }
+      return repo;
+    };
     fixtures.getMovieCollectionFactory = () =>
       moduleFixture.get(MovieCollectionFactory);
     await moduleFixture.init();

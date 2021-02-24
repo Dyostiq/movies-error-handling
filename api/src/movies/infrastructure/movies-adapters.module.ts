@@ -5,10 +5,17 @@ import { MovieEntity } from './movie.entity';
 import { MovieCollectionRepository } from '../application';
 import { TypeormMovieCollectionRepository } from './typeorm-movie-collection.repository';
 import { MoviesDomainModule } from '../domain';
+import { DetailsEntity } from './details.entity';
+import { DetailsRepository } from '../application/details.repository';
+import { TypeormDetailsRepository } from './typeorm-details.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([MovieCollectionEntity, MovieEntity]),
+    TypeOrmModule.forFeature([
+      MovieCollectionEntity,
+      MovieEntity,
+      DetailsEntity,
+    ]),
     MoviesDomainModule,
   ],
   providers: [
@@ -16,7 +23,11 @@ import { MoviesDomainModule } from '../domain';
       provide: MovieCollectionRepository,
       useClass: TypeormMovieCollectionRepository,
     },
+    {
+      provide: DetailsRepository,
+      useClass: TypeormDetailsRepository,
+    },
   ],
-  exports: [MovieCollectionRepository],
+  exports: [MovieCollectionRepository, DetailsRepository],
 })
 export class MoviesAdaptersModule {}

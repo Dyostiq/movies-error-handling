@@ -18,6 +18,7 @@ services:
         target: 3000
     volumes:
       - ./auth:/app/
+      - /app/node_modules
     environment:
       JWT_SECRET: ${JWT_SECRET}
   api:

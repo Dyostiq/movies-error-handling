@@ -17,6 +17,18 @@ export type MovieCollectionSnapshot = Readonly<{
   userId: UserId;
 }>;
 
+/**
+ * In the application, we have only one quite big aggregate.
+ * I have assumed that are two strong invariants:
+ * * No duplicates.
+ * * Only five movies for a "basic" user, strictly in one month, accurate to the second.
+ *
+ * Because of that, the aggregate consists of all user's movies.
+ * I am aware of the limitation of this approach, that it will puff-up after a while.
+ * But I have decided this is ok for now :)
+ * Of course, I could fiddle slightly more, put a limit in the aggregate,
+ * and leverage the database to guarantee uniqueness – or loosen the invariants.
+ */
 export class MovieCollection {
   private movies: Movie[] = [];
 

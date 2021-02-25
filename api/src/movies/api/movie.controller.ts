@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { isLeft } from 'fp-ts/Either';
 import { Request } from 'express';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { CreateMovieService, GetMoviesService } from '../application';
 import { JwtAuthGuard } from '../../auth';
 import { CreateMovieDto } from './create-movie.dto';
@@ -17,6 +18,7 @@ import { MoviesCollectionDto } from './movies-collection.dto';
 
 @Controller('/movies')
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class MovieController {
   constructor(
     private readonly createMovieService: CreateMovieService,

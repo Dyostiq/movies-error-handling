@@ -1,13 +1,5 @@
 import { MovieDetails } from '../application';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToOne,
-  PrimaryColumn,
-} from 'typeorm';
-import { MovieId } from '../domain';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { MovieEntity } from './movie.entity';
 
 @Entity()

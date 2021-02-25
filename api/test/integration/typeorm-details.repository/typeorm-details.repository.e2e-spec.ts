@@ -12,13 +12,19 @@ beforeEach(() => {
 
 test(`with multiple details saved should retrieve the correct one`, async () => {
   // given
-  const [firstMovie, secondMovie, thridMovie] = fixtures.sampleDetails();
+  const [
+    firstMovieId,
+    secondMovieId,
+    thirdMovieId,
+  ] = await fixtures.aUserHasCollectionWithThreeMovies();
   // and
-  await typeormDetailsRepository.save(new MovieId('first'), firstMovie);
-  await typeormDetailsRepository.save(new MovieId('second'), secondMovie);
-  await typeormDetailsRepository.save(new MovieId('thrid'), thridMovie);
+  const [firstMovie, secondMovie, thirdMovie] = fixtures.sampleDetails();
+  // and
+  await typeormDetailsRepository.save(firstMovieId, firstMovie);
+  await typeormDetailsRepository.save(secondMovieId, secondMovie);
+  await typeormDetailsRepository.save(thirdMovieId, thirdMovie);
   // when
-  const result = await typeormDetailsRepository.find(new MovieId('second'));
+  const result = await typeormDetailsRepository.find(secondMovieId);
   // then
   expect(result).toStrictEqual(right(secondMovie));
 });

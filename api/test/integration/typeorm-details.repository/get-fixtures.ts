@@ -5,12 +5,25 @@ import { TypeormDetailsRepository } from '../../../src/movies/infrastructure/typ
 import {
   MovieDetails,
   DetailsRepository,
+  MovieCollectionRepository,
 } from '../../../src/movies/application';
+import {
+  MovieCollection,
+  MovieCollectionFactory,
+  MovieId,
+  UserId,
+} from '../../../src/movies/domain';
+import { CollectionFactory } from '@nestjs/cli/lib/schematics';
+import { assertRight } from '../../../src/test/assert-right';
+import { isRight } from 'fp-ts/Either';
 
 export function getFixtures() {
   const fixtures: {
     getTypeormDetailsRepository: () => TypeormDetailsRepository;
     sampleDetails: () => [MovieDetails, MovieDetails, MovieDetails];
+    aUserHasCollectionWithThreeMovies: () => Promise<
+      [MovieId, MovieId, MovieId]
+    >;
   } = {
     getTypeormDetailsRepository: () => {
       throw new Error();
@@ -35,6 +48,9 @@ export function getFixtures() {
         'Joel Schumacher',
       ),
     ],
+    aUserHasCollectionWithThreeMovies: () => {
+      throw new Error();
+    },
   };
 
   let moduleFixture: TestingModule;
@@ -42,6 +58,7 @@ export function getFixtures() {
     moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
+    await moduleFixture.init();
 
     await clearRepo(moduleFixture);
 
@@ -51,6 +68,22 @@ export function getFixtures() {
         fail();
       }
       return repo;
+    };
+    fixtures.aUserHasCollectionWithThreeMovies = async () => {
+      const repo = moduleFixture.get(MovieCollectionRepository);
+      const collectionFactory = moduleFixture.get(MovieCollectionFactory);
+      const collection = collectionFactory.createMovieCollection(
+        'basic',
+        'UTC',
+        new UserId('123'),
+      );
+      const movies = ['Batman', 'Batman Begins', 'Batman Returns']
+        .map((title) => collection.createMovie(title))
+        .filter(isRight)
+        .map((result) => result.right);
+      await repo.saveCollection(collection);
+      if (movies.length !== 3) throw new Error();
+      return [movies[0], movies[1], movies[2]];
     };
     await moduleFixture.init();
   });

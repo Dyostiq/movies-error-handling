@@ -30,12 +30,6 @@ export class CreateMovieService {
   ): Promise<Either<CreateMovieApplicationError, MovieId>> {
     const timezone = 'UTC';
 
-    const fetchedDetails = await this.detailsService.fetchDetails(title);
-
-    if (isLeft(fetchedDetails)) {
-      return left('service unavailable' as const);
-    }
-
     const createMovieResult = await this.createMovieInTransaction(
       userRole,
       timezone,
@@ -45,6 +39,13 @@ export class CreateMovieService {
 
     if (isLeft(createMovieResult)) {
       return createMovieResult;
+    }
+
+    const fetchedDetails = await this.detailsService.fetchDetails(title);
+
+    if (isLeft(fetchedDetails)) {
+      await this.rollbackMovieInTransaction(userRole, timezone, userId, title);
+      return left('service unavailable' as const);
     }
 
     const detailsSaveResult: Either<
@@ -57,7 +58,6 @@ export class CreateMovieService {
 
     if (isLeft(detailsSaveResult)) {
       await this.rollbackMovieInTransaction(userRole, timezone, userId, title);
-
       return left('service unavailable');
     }
 

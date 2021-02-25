@@ -9,6 +9,7 @@ export class MoviesApplicationModule {
       imports: [...adapterModule, MoviesDomainModule],
       module: MoviesApplicationModule,
       providers: [CreateMovieService],
+      exports: [CreateMovieService, ...adapterModule],
     };
   }
 }

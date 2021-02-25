@@ -1,7 +1,8 @@
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToOne, PrimaryColumn } from 'typeorm';
 import { MovieId, Movie } from '../domain';
 import { MovieCollectionEntity } from './movie-collection.entity';
 import { JoinColumn } from 'typeorm';
+import { DetailsEntity } from './details.entity';
 
 @Entity()
 export class MovieEntity implements Movie {
@@ -20,7 +21,10 @@ export class MovieEntity implements Movie {
   title: string;
 
   @Column()
-  createTime!: Date;
+  createTime: Date;
+
+  @OneToOne(() => DetailsEntity, (details) => details.movie)
+  details?: DetailsEntity;
 
   @ManyToOne(() => MovieCollectionEntity, (collection) => collection._movies)
   @JoinColumn({

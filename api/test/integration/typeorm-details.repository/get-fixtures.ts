@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../../src/app.module';
-import { clearRepo } from '../clear-repo';
+import { clearRepo } from '../../clear-repo';
 import { TypeormDetailsRepository } from '../../../src/movies/infrastructure/typeorm-details.repository';
 import { MovieDetails } from '../../../src/movies/application/movie-details';
 import { MovieCollectionRepository } from '../../../src/movies/application';

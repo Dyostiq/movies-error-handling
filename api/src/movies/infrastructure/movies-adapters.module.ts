@@ -2,7 +2,7 @@ import { HttpModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MovieCollectionEntity } from './movie-collection.entity';
 import { MovieEntity } from './movie.entity';
-import { MovieCollectionRepository } from '../application';
+import { GetMoviesService, MovieCollectionRepository } from '../application';
 import { TypeormMovieCollectionRepository } from './typeorm-movie-collection.repository';
 import { MoviesDomainModule } from '../domain';
 import { DetailsEntity } from './details.entity';
@@ -12,6 +12,7 @@ import { DetailsService } from '../application/details.service';
 import { OmdbDetailsService } from './omdb-details.service';
 import { ConfigModule } from '@nestjs/config';
 import { omdbConfig } from './omdb.config';
+import { TypeormGetMoviesService } from './typeorm-get-movies.service';
 
 @Module({
   imports: [
@@ -37,7 +38,16 @@ import { omdbConfig } from './omdb.config';
       provide: DetailsService,
       useClass: OmdbDetailsService,
     },
+    {
+      provide: GetMoviesService,
+      useClass: TypeormGetMoviesService,
+    },
   ],
-  exports: [MovieCollectionRepository, DetailsRepository, DetailsService],
+  exports: [
+    MovieCollectionRepository,
+    DetailsRepository,
+    DetailsService,
+    GetMoviesService,
+  ],
 })
 export class MoviesAdaptersModule {}

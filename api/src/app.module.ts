@@ -5,10 +5,12 @@ import { MoviesModule } from './movies/movies.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { dbConfig } from './db.config';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     MoviesModule,
+    AuthModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule.forFeature(dbConfig)],

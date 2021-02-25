@@ -4,7 +4,7 @@ import { Connection } from 'typeorm';
 import { getConnectionToken } from '@nestjs/typeorm';
 import { TypeormMovieCollectionRepository } from '../../../src/movies/infrastructure/typeorm-movie-collection.repository';
 import { MovieCollectionFactory } from '../../../src/movies/domain';
-import { clearRepo } from '../clear-repo';
+import { clearRepo } from '../../clear-repo';
 import { MovieCollectionRepository } from '../../../src/movies/application';
 
 export function getFixtures() {

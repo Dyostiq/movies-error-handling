@@ -36,6 +36,7 @@ export function getFixtures() {
     }).compile();
     fixtures.getOmdbDetailsService = () =>
       testingModule.get(OmdbDetailsService);
+    nock.disableNetConnect();
   });
 
   fixtures.aOmdbWithBatmanMovies = () => {
@@ -66,14 +67,14 @@ export function getFixtures() {
   };
 
   fixtures.invalidTestApiKey = () => {
-    nock.restore();
+    nock.cleanAll();
     nock('https://www.omdbapi.com')
       .get('/')
       .reply(401, { Response: 'False', Error: 'Invalid API key!' });
   };
 
   afterEach(() => {
-    nock.restore();
+    nock.cleanAll();
     process.env.OMDB_API_KEY = undefined;
   });
 

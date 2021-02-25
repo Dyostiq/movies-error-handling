@@ -11,6 +11,7 @@ import {
 import { isLeft } from 'fp-ts/Either';
 import { Request } from 'express';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { plainToClass } from 'class-transformer';
 import { CreateMovieService, GetMoviesService } from '../application';
 import { JwtAuthGuard } from '../../auth';
 import { CreateMovieDto } from './create-movie.dto';
@@ -65,8 +66,8 @@ export class MovieController {
     if (isLeft(result)) {
       throw new InternalServerErrorException();
     }
-    return {
+    return plainToClass(MoviesCollectionDto, {
       items: result.right,
-    };
+    });
   }
 }

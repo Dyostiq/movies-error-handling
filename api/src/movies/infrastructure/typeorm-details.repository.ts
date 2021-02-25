@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { DetailsRepository } from '../application/details.repository';
+import { DetailsRepository, MovieDetails } from '../application';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MovieDetails } from '../application/movie-details';
 import { MovieId } from '../domain';
 import { Either, left, right } from 'fp-ts/Either';
 import { DetailsEntity } from './details.entity';

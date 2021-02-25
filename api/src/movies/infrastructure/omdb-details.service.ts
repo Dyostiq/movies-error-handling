@@ -1,6 +1,5 @@
-import { DetailsService } from '../application/details.service';
+import { DetailsService, MovieDetails } from '../application';
 import { Either, left, right } from 'fp-ts/Either';
-import { MovieDetails } from '../application/movie-details';
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { omdbConfig } from './omdb.config';

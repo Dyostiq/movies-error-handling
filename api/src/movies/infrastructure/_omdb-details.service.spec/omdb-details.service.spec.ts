@@ -1,5 +1,5 @@
 import { right } from 'fp-ts/Either';
-import { MovieDetails } from '../../application/movie-details';
+import { MovieDetails } from '../../application';
 import { assertLeft } from '../../../test/assert-left';
 import { OmdbDetailsService } from '../omdb-details.service';
 import { getFixtures } from './get-fixtures';

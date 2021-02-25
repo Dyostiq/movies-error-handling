@@ -1,4 +1,4 @@
-import { MovieDetails } from '../application/movie-details';
+import { MovieDetails } from '../application';
 import {
   Column,
   Entity,

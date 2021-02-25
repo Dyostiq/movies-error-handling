@@ -32,8 +32,6 @@ export function getFixtures() {
     await clearRepo(app);
     nock.disableNetConnect();
     nock.enableNetConnect(/(localhost|127\.0\.0\.1):/);
-    // console.log(await app.getUrl())
-    // nock.enableNetConnect(app.getHttpServer())
   });
 
   afterEach(async () => {

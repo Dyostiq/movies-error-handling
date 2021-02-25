@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { MoviesModule } from './movies/movies.module';
+import { MoviesModule } from './movies';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { dbConfig } from './db.config';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './auth';
 
 @Module({
   imports: [
@@ -25,7 +23,5 @@ import { AuthModule } from './auth/auth.module';
       inject: [dbConfig.KEY],
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

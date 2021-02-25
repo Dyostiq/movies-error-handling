@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../../src/app.module';
 import { clearRepo } from '../../clear-repo';
 import { TypeormDetailsRepository } from '../../../src/movies/infrastructure/typeorm-details.repository';
-import { MovieDetails } from '../../../src/movies/application/movie-details';
-import { MovieCollectionRepository } from '../../../src/movies/application';
-import { TypeormMovieCollectionRepository } from '../../../src/movies/infrastructure/typeorm-movie-collection.repository';
-import { DetailsRepository } from '../../../src/movies/application/details.repository';
+import {
+  MovieDetails,
+  DetailsRepository,
+} from '../../../src/movies/application';
 
 export function getFixtures() {
   const fixtures: {

@@ -1,5 +1,4 @@
 import { DetailsService } from '../details.service';
-import { Either, left, right } from 'fp-ts/Either';
 import { MovieDetails } from '../movie-details';
 import { Injectable } from '@nestjs/common';
 
@@ -44,11 +43,11 @@ export class InMemoryDetailsService extends DetailsService {
     },
   ];
 
-  async fetchDetails(title: string): Promise<Either<Error, MovieDetails>> {
+  async fetchDetails(title: string): Promise<MovieDetails> {
     const movie = this.db.find((movie) => movie.title === title);
     if (!movie) {
-      return left(new Error('not found'));
+      throw new Error('not found');
     }
-    return right(movie);
+    return movie;
   }
 }

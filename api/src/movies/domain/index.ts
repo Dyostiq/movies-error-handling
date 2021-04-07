@@ -8,4 +8,7 @@ export {
   CreateAMovieError,
   RollbackMovieError,
   MovieCollectionSnapshot,
+  DuplicatedMovie,
 } from './movie-collection';
+export { TooManyMoviesInAMonth } from './basic-user.policy';
+export { DomainException } from './domain.exception';

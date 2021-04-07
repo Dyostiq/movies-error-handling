@@ -1,18 +1,23 @@
 import { MovieCollectionRepository } from './movie-collection.repository';
 import {
   CreateAMovieError,
+  MovieCollection,
   MovieCollectionFactory,
-  UserId,
   MovieId,
+  UserId,
 } from '../domain';
 import { DetailsRepository } from './details.repository';
 import { DetailsService } from './details.service';
-import { Either, isLeft, left } from 'fp-ts/Either';
 import { Injectable } from '@nestjs/common';
+import { ApplicationException } from './application.exception';
+import { MovieDetails } from './movie-details';
+
+export class ExternalServiceFailed extends ApplicationException {}
+export class ServiceUnavailable extends ApplicationException {}
 
 export type CreateMovieApplicationError =
-  | 'external service failed'
-  | 'service unavailable'
+  | ExternalServiceFailed
+  | ServiceUnavailable
   | CreateAMovieError;
 
 @Injectable()
@@ -28,7 +33,7 @@ export class CreateMovieService {
     title: string,
     userId: string,
     userRole: 'basic' | 'premium',
-  ): Promise<Either<CreateMovieApplicationError, MovieId>> {
+  ): Promise<MovieId> {
     const timezone = 'UTC';
 
     const createMovieResult = await this.createMovieInTransaction(
@@ -38,28 +43,19 @@ export class CreateMovieService {
       title,
     );
 
-    if (isLeft(createMovieResult)) {
-      return createMovieResult;
+    let fetchedDetails: MovieDetails;
+    try {
+      fetchedDetails = await this.detailsService.fetchDetails(title);
+    } catch (error) {
+      await this.rollbackMovieInTransaction(userRole, timezone, userId, title);
+      throw new ExternalServiceFailed();
     }
 
-    const fetchedDetails = await this.detailsService.fetchDetails(title);
-
-    if (isLeft(fetchedDetails)) {
+    try {
+      await this.detailsRepository.save(createMovieResult, fetchedDetails);
+    } catch (error) {
       await this.rollbackMovieInTransaction(userRole, timezone, userId, title);
-      return left('external service failed' as const);
-    }
-
-    const detailsSaveResult: Either<
-      Error,
-      MovieId
-    > = await this.detailsRepository.save(
-      createMovieResult.right,
-      fetchedDetails.right,
-    );
-
-    if (isLeft(detailsSaveResult)) {
-      await this.rollbackMovieInTransaction(userRole, timezone, userId, title);
-      return left('service unavailable');
+      throw new ExternalServiceFailed();
     }
 
     return createMovieResult;
@@ -73,17 +69,19 @@ export class CreateMovieService {
   ) {
     return await this.collections.withTransaction(
       async (transactionalCollections) => {
-        const findResult = await transactionalCollections.findUserMovieCollection(
-          userRole,
-          timezone,
-          userId,
-        );
-        if (isLeft(findResult)) {
-          return left('service unavailable' as const);
+        let findResult: MovieCollection | null;
+        try {
+          findResult = await transactionalCollections.findUserMovieCollection(
+            userRole,
+            timezone,
+            userId,
+          );
+        } catch (error) {
+          throw new ServiceUnavailable();
         }
 
         const collection =
-          findResult.right ??
+          findResult ??
           this.collectionFactory.createMovieCollection(
             userRole,
             'UTC',
@@ -91,15 +89,11 @@ export class CreateMovieService {
           );
 
         const movieCreationResult = collection.createMovie(title);
-        if (isLeft(movieCreationResult)) {
-          return movieCreationResult;
-        }
 
-        const saveResult = await transactionalCollections.saveCollection(
-          collection,
-        );
-        if (isLeft(saveResult)) {
-          return left('service unavailable' as const);
+        try {
+          await transactionalCollections.saveCollection(collection);
+        } catch (error) {
+          throw new ServiceUnavailable();
         }
         return movieCreationResult;
       },
@@ -113,29 +107,16 @@ export class CreateMovieService {
     title: string,
   ): Promise<void> {
     await this.collections.withTransaction(async (transactionalCollections) => {
-      const findResult = await transactionalCollections.findUserMovieCollection(
+      const collection = await transactionalCollections.findUserMovieCollection(
         userRole,
         timezone,
         userId,
       );
-
-      if (isLeft(findResult)) {
-        return;
-      }
-      const collection = findResult.right;
       if (!collection) {
         return;
       }
-      const rollbackResult = await collection.rollbackMovie(title);
-      if (isLeft(rollbackResult)) {
-        return;
-      }
-      const rollbackSaveResult = await transactionalCollections.saveCollection(
-        collection,
-      );
-      if (isLeft(rollbackSaveResult)) {
-        return;
-      }
+      await collection.rollbackMovie(title);
+      await transactionalCollections.saveCollection(collection);
     });
   }
 }

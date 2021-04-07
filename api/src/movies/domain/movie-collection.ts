@@ -1,4 +1,3 @@
-import { Either, isLeft, left, right } from 'fp-ts/Either';
 import { Movie } from './movie';
 import {
   CreateMoviePolicy,
@@ -7,10 +6,22 @@ import {
 import { UserId } from './user.id';
 import { MovieId } from './movie.id';
 import { BasicUserPolicyError } from './basic-user.policy';
+import { DomainException } from './domain.exception';
+
+export class DuplicatedMovie extends DomainException {
+  constructor() {
+    super('duplicated movie');
+  }
+}
+export class MovieDoesNotExist extends DomainException {
+  constructor() {
+    super('movie does not exist');
+  }
+}
 
 type AllCreateMoviePolicyError = BasicUserPolicyError | CreateMoviePolicyError;
-export type CreateAMovieError = 'duplicate' | AllCreateMoviePolicyError;
-export type RollbackMovieError = 'the movie does not exist';
+export type CreateAMovieError = DuplicatedMovie | AllCreateMoviePolicyError;
+export type RollbackMovieError = MovieDoesNotExist;
 export type MovieCollectionSnapshot = Readonly<{
   movies: Movie[];
   timezone: string;
@@ -38,28 +49,26 @@ export class MovieCollection {
     private readonly timezone: string,
   ) {}
 
-  createMovie(title: string): Either<CreateAMovieError, MovieId> {
+  createMovie(title: string): MovieId {
     if (this.isADuplicate(title)) {
-      return left('duplicate');
+      throw new DuplicatedMovie();
     }
-    const result = this.policy.canCreate(this.movies, this.timezone);
-    if (isLeft(result)) {
-      return result;
-    }
+    // ??
+    this.policy.canCreate(this.movies, this.timezone);
 
-    return right(this.addMovie(title).movieId);
+    return this.addMovie(title).movieId;
   }
 
   listMovies(): string[] {
     return this.movies.map((movie) => movie.title);
   }
 
-  rollbackMovie(title: string): Either<RollbackMovieError, true> {
+  rollbackMovie(title: string): true {
     if (this.isTitleInCollection(title)) {
       this.removeMovie(title);
-      return right(true);
+      return true;
     } else {
-      return left('the movie does not exist');
+      throw new MovieDoesNotExist();
     }
   }
 

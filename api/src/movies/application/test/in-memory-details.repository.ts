@@ -2,7 +2,6 @@ import { DetailsRepository } from '../details.repository';
 import { Optional } from 'utility-types';
 import { MovieDetails } from '../movie-details';
 import { MovieId } from '../../domain';
-import { Either, right } from 'fp-ts/Either';
 import { classToClass } from 'class-transformer';
 import { Injectable } from '@nestjs/common';
 
@@ -12,11 +11,8 @@ export class InMemoryDetailsRepository extends DetailsRepository {
     [id: string]: MovieDetails;
   }> = {};
 
-  async save(
-    movieId: MovieId,
-    details: MovieDetails,
-  ): Promise<Either<Error, MovieId>> {
+  async save(movieId: MovieId, details: MovieDetails): Promise<MovieId> {
     this.db[movieId.id] = classToClass(details);
-    return right(movieId);
+    return movieId;
   }
 }

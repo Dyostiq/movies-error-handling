@@ -6,6 +6,14 @@ export { DetailsRepository } from './details.repository';
 export { GetMoviesService, GetMoviesError } from './get-movies.service';
 export { CreateMovieService } from './create-movie.service';
 
+// exceptions
+export { ApplicationException } from './application.exception';
+export {
+  ExternalServiceFailed,
+  ServiceUnavailable,
+} from './create-movie.service';
+export { GetMoviesUnknownError } from './get-movies.service';
+
 // data
 export { MovieDetails } from './movie-details';
 

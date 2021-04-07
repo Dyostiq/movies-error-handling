@@ -1,8 +1,10 @@
 import { Movie } from './movie';
-import { Either } from 'fp-ts/Either';
+import { DomainException } from './domain.exception';
+
+export class CannotCreateAMovie extends DomainException {}
 
 export abstract class CreateMoviePolicy<Errors = CreateMoviePolicyError> {
-  abstract canCreate(movies: Movie[], timezone: string): Either<Errors, true>;
+  abstract canCreate(movies: Movie[], timezone: string): true;
 }
 
-export type CreateMoviePolicyError = 'cannot create a movie';
+export type CreateMoviePolicyError = CannotCreateAMovie;

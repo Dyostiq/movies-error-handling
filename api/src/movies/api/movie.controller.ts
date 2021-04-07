@@ -1,25 +1,25 @@
 import {
+  BadGatewayException,
   Body,
   Controller,
   Get,
-  InternalServerErrorException,
+  Headers,
   Post,
   Req,
-  Headers,
-  UnprocessableEntityException,
-  BadGatewayException,
+  UseFilters,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { plainToClass } from 'class-transformer';
 import {
   CreateMovieService,
-  GetMoviesService,
   ExternalServiceFailed,
+  GetMoviesService,
 } from '../application';
 import { CreateMovieDto } from './create-movie.dto';
 import { MoviesCollectionDto } from './movies-collection.dto';
 import { ApiHeaders } from '@nestjs/swagger';
-import { DomainException } from '../domain';
+import { GenericDomainExceptionFilter } from './generic-domain-exception.filter';
+import { ExternalServiceFailedExceptionFilter } from './external-service-failed-exception.filter';
 
 @Controller('/movies')
 export class MovieController {
@@ -30,29 +30,21 @@ export class MovieController {
 
   @Post()
   @ApiHeaders([{ name: 'role', enum: ['basic', 'premium'] }])
+  @UseFilters(
+    GenericDomainExceptionFilter,
+    ExternalServiceFailedExceptionFilter,
+  )
   async createAMovie(
     @Req() request: Request,
     @Body() body: CreateMovieDto,
     @Headers('userId') userId: string,
     @Headers('role') role: 'basic' | 'premium',
   ): Promise<void> {
-    try {
-      await this.createMovieService.createMovie(
-        body.title,
-        userId.toString(),
-        role,
-      );
-    } catch (error) {
-      if (error instanceof DomainException) {
-        throw new UnprocessableEntityException(error.message);
-      }
-      switch (error.constructor) {
-        case ExternalServiceFailed:
-          throw new BadGatewayException();
-        default:
-          throw new InternalServerErrorException();
-      }
-    }
+    await this.createMovieService.createMovie(
+      body.title,
+      userId.toString(),
+      role,
+    );
   }
 
   @Get()

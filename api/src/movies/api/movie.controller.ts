@@ -2,12 +2,11 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   InternalServerErrorException,
   Post,
   Req,
-  Headers,
-  UnprocessableEntityException,
-  BadGatewayException,
+  UseFilters,
 } from '@nestjs/common';
 import { isLeft } from 'fp-ts/Either';
 import { Request } from 'express';
@@ -16,6 +15,9 @@ import { CreateMovieService, GetMoviesService } from '../application';
 import { CreateMovieDto } from './create-movie.dto';
 import { MoviesCollectionDto } from './movies-collection.dto';
 import { ApiHeaders } from '@nestjs/swagger';
+import { getOrThrow } from './get-or-throw';
+import { GenericDomainExceptionFilter } from './generic-domain-exception.filter';
+import { ExternalServiceFailedExceptionFilter } from './external-service-failed-exception.filter';
 
 @Controller('/movies')
 export class MovieController {
@@ -26,29 +28,23 @@ export class MovieController {
 
   @Post()
   @ApiHeaders([{ name: 'role', enum: ['basic', 'premium'] }])
+  @UseFilters(
+    GenericDomainExceptionFilter,
+    ExternalServiceFailedExceptionFilter,
+  )
   async createAMovie(
     @Req() request: Request,
     @Body() body: CreateMovieDto,
     @Headers('userId') userId: string,
     @Headers('role') role: 'basic' | 'premium',
   ): Promise<void> {
-    const result = await this.createMovieService.createMovie(
-      body.title,
-      userId.toString(),
-      role,
+    getOrThrow(
+      await this.createMovieService.createMovie(
+        body.title,
+        userId.toString(),
+        role,
+      ),
     );
-    if (isLeft(result)) {
-      switch (result.left) {
-        case 'duplicate':
-        case 'too many movies in a month':
-          throw new UnprocessableEntityException(result.left);
-        case 'service unavailable':
-        case 'cannot create a movie':
-          throw new InternalServerErrorException();
-        case 'external service failed':
-          throw new BadGatewayException();
-      }
-    }
   }
 
   @Get()

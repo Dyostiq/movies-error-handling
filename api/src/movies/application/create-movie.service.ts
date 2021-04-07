@@ -4,16 +4,17 @@ import {
   MovieCollectionFactory,
   UserId,
   MovieId,
+  DomainError,
 } from '../domain';
 import { DetailsRepository } from './details.repository';
 import { DetailsService } from './details.service';
 import { Either, isLeft, left } from 'fp-ts/Either';
 import { Injectable } from '@nestjs/common';
+import { ApplicationError } from './application.error';
 
 export type CreateMovieApplicationError =
-  | 'external service failed'
-  | 'service unavailable'
-  | CreateAMovieError;
+  | ApplicationError<'external service failed' | 'service unavailable'>
+  | DomainError<CreateAMovieError>;
 
 @Injectable()
 export class CreateMovieService {
@@ -46,7 +47,7 @@ export class CreateMovieService {
 
     if (isLeft(fetchedDetails)) {
       await this.rollbackMovieInTransaction(userRole, timezone, userId, title);
-      return left('external service failed' as const);
+      return left(new ApplicationError('external service failed'));
     }
 
     const detailsSaveResult: Either<
@@ -59,7 +60,7 @@ export class CreateMovieService {
 
     if (isLeft(detailsSaveResult)) {
       await this.rollbackMovieInTransaction(userRole, timezone, userId, title);
-      return left('service unavailable');
+      return left(new ApplicationError('service unavailable'));
     }
 
     return createMovieResult;
@@ -70,7 +71,7 @@ export class CreateMovieService {
     timezone: string,
     userId: string,
     title: string,
-  ) {
+  ): Promise<Either<CreateMovieApplicationError, MovieId>> {
     return await this.collections.withTransaction(
       async (transactionalCollections) => {
         const findResult = await transactionalCollections.findUserMovieCollection(
@@ -79,7 +80,7 @@ export class CreateMovieService {
           userId,
         );
         if (isLeft(findResult)) {
-          return left('service unavailable' as const);
+          return left(new ApplicationError('service unavailable' as const));
         }
 
         const collection =
@@ -99,7 +100,7 @@ export class CreateMovieService {
           collection,
         );
         if (isLeft(saveResult)) {
-          return left('service unavailable' as const);
+          return left(new ApplicationError('service unavailable' as const));
         }
         return movieCreationResult;
       },

@@ -9,3 +9,4 @@ export {
   RollbackMovieError,
   MovieCollectionSnapshot,
 } from './movie-collection';
+export { DomainError } from './domain.error';

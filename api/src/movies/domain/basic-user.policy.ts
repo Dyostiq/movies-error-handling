@@ -1,8 +1,10 @@
 import * as luxon from 'luxon';
 import { Injectable } from '@nestjs/common';
-import { Either, left, right } from 'fp-ts/Either';
+import { left, right } from 'fp-ts/Either';
 import { CreateMoviePolicy } from './create-movie.policy';
 import { Movie } from './movie';
+import { DomainEither } from './domain.either';
+import { DomainError } from './domain.error';
 
 export type BasicUserPolicyError = 'too many movies in a month';
 
@@ -11,9 +13,9 @@ export class BasicUserPolicy extends CreateMoviePolicy<BasicUserPolicyError> {
   canCreate(
     movies: Movie[],
     timezone: string,
-  ): Either<BasicUserPolicyError, true> {
+  ): DomainEither<BasicUserPolicyError, true> {
     if (this.numberOfMoviesThisMonth(movies, timezone) >= 5) {
-      return left('too many movies in a month');
+      return left(new DomainError('too many movies in a month'));
     }
     return right(true);
   }

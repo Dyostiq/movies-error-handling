@@ -1,4 +1,4 @@
-import { Either, isLeft, left, right } from 'fp-ts/Either';
+import { isLeft, left, right } from 'fp-ts/Either';
 import { Movie } from './movie';
 import {
   CreateMoviePolicy,
@@ -7,6 +7,8 @@ import {
 import { UserId } from './user.id';
 import { MovieId } from './movie.id';
 import { BasicUserPolicyError } from './basic-user.policy';
+import { DomainEither } from './domain.either';
+import { DomainError } from './domain.error';
 
 type AllCreateMoviePolicyError = BasicUserPolicyError | CreateMoviePolicyError;
 export type CreateAMovieError = 'duplicate' | AllCreateMoviePolicyError;
@@ -38,9 +40,9 @@ export class MovieCollection {
     private readonly timezone: string,
   ) {}
 
-  createMovie(title: string): Either<CreateAMovieError, MovieId> {
+  createMovie(title: string): DomainEither<CreateAMovieError, MovieId> {
     if (this.isADuplicate(title)) {
-      return left('duplicate');
+      return left(new DomainError('duplicate'));
     }
     const result = this.policy.canCreate(this.movies, this.timezone);
     if (isLeft(result)) {
@@ -54,12 +56,12 @@ export class MovieCollection {
     return this.movies.map((movie) => movie.title);
   }
 
-  rollbackMovie(title: string): Either<RollbackMovieError, true> {
+  rollbackMovie(title: string): DomainEither<RollbackMovieError, true> {
     if (this.isTitleInCollection(title)) {
       this.removeMovie(title);
       return right(true);
     } else {
-      return left('the movie does not exist');
+      return left(new DomainError('the movie does not exist'));
     }
   }
 

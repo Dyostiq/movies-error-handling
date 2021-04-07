@@ -7,10 +7,11 @@ import {
 } from '../domain';
 import { DetailsRepository } from './details.repository';
 import { DetailsService } from './details.service';
-import { Either, isLeft, left, right } from 'fp-ts/Either';
+import { Either, isLeft, left } from 'fp-ts/Either';
 import { Injectable } from '@nestjs/common';
 
 export type CreateMovieApplicationError =
+  | 'external service failed'
   | 'service unavailable'
   | CreateAMovieError;
 
@@ -45,7 +46,7 @@ export class CreateMovieService {
 
     if (isLeft(fetchedDetails)) {
       await this.rollbackMovieInTransaction(userRole, timezone, userId, title);
-      return left('service unavailable' as const);
+      return left('external service failed' as const);
     }
 
     const detailsSaveResult: Either<
@@ -110,7 +111,7 @@ export class CreateMovieService {
     timezone: string,
     userId: string,
     title: string,
-  ) {
+  ): Promise<void> {
     await this.collections.withTransaction(async (transactionalCollections) => {
       const findResult = await transactionalCollections.findUserMovieCollection(
         userRole,
@@ -119,23 +120,22 @@ export class CreateMovieService {
       );
 
       if (isLeft(findResult)) {
-        return left('service unavailable' as const);
+        return;
       }
       const collection = findResult.right;
       if (!collection) {
-        return left('service unavailable' as const);
+        return;
       }
       const rollbackResult = await collection.rollbackMovie(title);
       if (isLeft(rollbackResult)) {
-        return left('service unavailable' as const);
+        return;
       }
       const rollbackSaveResult = await transactionalCollections.saveCollection(
         collection,
       );
       if (isLeft(rollbackSaveResult)) {
-        return left('service unavailable' as const);
+        return;
       }
-      return right(true);
     });
   }
 }

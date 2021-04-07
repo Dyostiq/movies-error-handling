@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -7,6 +6,8 @@ import {
   Post,
   Req,
   Headers,
+  UnprocessableEntityException,
+  BadGatewayException,
 } from '@nestjs/common';
 import { isLeft } from 'fp-ts/Either';
 import { Request } from 'express';
@@ -40,10 +41,12 @@ export class MovieController {
       switch (result.left) {
         case 'duplicate':
         case 'too many movies in a month':
-          throw new BadRequestException(result.left);
+          throw new UnprocessableEntityException(result.left);
         case 'service unavailable':
         case 'cannot create a movie':
           throw new InternalServerErrorException();
+        case 'external service failed':
+          throw new BadGatewayException();
       }
     }
   }
@@ -55,7 +58,10 @@ export class MovieController {
   ): Promise<MoviesCollectionDto> {
     const result = await this.getMoviesService.getMovies(userId.toString());
     if (isLeft(result)) {
-      throw new InternalServerErrorException();
+      switch (result.left) {
+        case 'error':
+          throw new InternalServerErrorException();
+      }
     }
     return plainToClass(MoviesCollectionDto, {
       items: result.right,

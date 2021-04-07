@@ -8,25 +8,12 @@ services:
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
-  auth:
-    command: node src/server.js
-    build:
-      context: auth
-      dockerfile: Dockerfile
-    ports:
-      - published: ${APP_PORT:-3000}
-        target: 3000
-    volumes:
-      - ./auth:/app/
-      - /app/node_modules
-    environment:
-      JWT_SECRET: ${JWT_SECRET}
   api:
     build:
       context: api
       target: development
     ports:
-      - 3001:3000
+      - 3000:3000
     volumes:
       - ./api:/app
       - /app/node_modules

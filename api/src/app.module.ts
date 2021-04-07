@@ -3,12 +3,10 @@ import { MoviesModule } from './movies';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { dbConfig } from './db.config';
-import { AuthModule } from './auth';
 
 @Module({
   imports: [
     MoviesModule,
-    AuthModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule.forFeature(dbConfig)],

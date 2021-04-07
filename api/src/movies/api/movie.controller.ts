@@ -6,20 +6,17 @@ import {
   InternalServerErrorException,
   Post,
   Req,
-  UseGuards,
+  Headers,
 } from '@nestjs/common';
 import { isLeft } from 'fp-ts/Either';
 import { Request } from 'express';
-import { ApiBearerAuth } from '@nestjs/swagger';
 import { plainToClass } from 'class-transformer';
 import { CreateMovieService, GetMoviesService } from '../application';
-import { JwtAuthGuard } from '../../auth';
 import { CreateMovieDto } from './create-movie.dto';
 import { MoviesCollectionDto } from './movies-collection.dto';
+import { ApiHeaders } from '@nestjs/swagger';
 
 @Controller('/movies')
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
 export class MovieController {
   constructor(
     private readonly createMovieService: CreateMovieService,
@@ -27,19 +24,17 @@ export class MovieController {
   ) {}
 
   @Post()
+  @ApiHeaders([{ name: 'role', enum: ['basic', 'premium'] }])
   async createAMovie(
     @Req() request: Request,
     @Body() body: CreateMovieDto,
+    @Headers('userId') userId: string,
+    @Headers('role') role: 'basic' | 'premium',
   ): Promise<void> {
-    const user = request.user;
-    if (!user) {
-      throw new BadRequestException();
-    }
-
     const result = await this.createMovieService.createMovie(
       body.title,
-      user.userId.toString(),
-      user.role,
+      userId.toString(),
+      role,
     );
     if (isLeft(result)) {
       switch (result.left) {
@@ -54,15 +49,11 @@ export class MovieController {
   }
 
   @Get()
-  async listMovies(@Req() request: Request): Promise<MoviesCollectionDto> {
-    const user = request.user;
-    if (!user) {
-      throw new BadRequestException();
-    }
-
-    const result = await this.getMoviesService.getMovies(
-      user.userId.toString(),
-    );
+  async listMovies(
+    @Req() request: Request,
+    @Headers('userId') userId: string,
+  ): Promise<MoviesCollectionDto> {
+    const result = await this.getMoviesService.getMovies(userId.toString());
     if (isLeft(result)) {
       throw new InternalServerErrorException();
     }
